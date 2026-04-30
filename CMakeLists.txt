@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(untitled VERSION 0.1 LANGUAGES CXX)
+project(ctsimulator VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -56,6 +56,12 @@ qt_add_qml_module(appuntitled
     QML_FILES
         Main.qml
         MainView.qml
+        qml/tutorials/TutorialManager.qml
+        qml/tutorials/IntroductionTutorial.qml
+        qml/tutorials/ProjectionsTutorial.qml
+        qml/tutorials/AlgorithmsTutorial.qml
+        qml/tutorials/NoiseTutorial.qml
+        qml/tutorials/OptimizationTutorial.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

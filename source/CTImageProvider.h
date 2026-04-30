@@ -1,4 +1,4 @@
-`   /****************************
+/****************************
  * CT Image Provider
  * Provides phantom, sinogram, and reconstruction images to QML
  *****************************/

@@ -3,12 +3,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import CT.Visualization 1.0
 
-ApplicationWindow {
+Item {
     id: root
-    visible: true
-    width: 1280
-    height: 820
-    title: "CT Simulator — Educational Hub"
 
     // ─── Design Tokens ────────────────────────────────────────────────────────
     readonly property color bg:        "#0b1120"
@@ -33,9 +29,11 @@ ApplicationWindow {
 
     property int currentPage: 0
 
-    background: Rectangle { color: root.bg }
+    Rectangle {
+        anchors.fill: parent
+        color: root.bg
 
-    RowLayout {
+        RowLayout {
         anchors.fill: parent
         spacing: 0
 
@@ -167,6 +165,7 @@ ApplicationWindow {
                 NoiseTutorial         { accent: root.accent; accent2: root.accent2; card: root.card; border: root.border; textPri: root.textPri; textSec: root.textSec; textMuted: root.textMuted; bg: root.bg }
                 OptimizationTutorial  { accent: root.accent; accent2: root.accent2; card: root.card; border: root.border; textPri: root.textPri; textSec: root.textSec; textMuted: root.textMuted; bg: root.bg }
             }
+        }
         }
     }
 }

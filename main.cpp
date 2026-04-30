@@ -68,8 +68,8 @@ int main(int argc, char *argv[])
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
         
-    // For the tutorial mode, load the TutorialManager
-    engine.load(QUrl::fromLocalFile("qml/tutorials/TutorialManager.qml"));
+    // Load the unified entry point from the compiled QML module
+    engine.loadFromModule("untitled", "Main");
 
     return QCoreApplication::exec();
 }
