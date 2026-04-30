@@ -11,6 +11,11 @@ qt_standard_project_setup(REQUIRES 6.5)
 
 qt_add_executable(appuntitled
     main.cpp
+    src/visualization/ColormapManager.cpp
+    src/visualization/ImageViewer.cpp
+    src/visualization/MetricsCalculator.cpp
+    src/visualization/ROITools.cpp
+    src/visualization/RayPathVisualizer.cpp
 )
 
 qt_add_qml_module(appuntitled
