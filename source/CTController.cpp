@@ -10,6 +10,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <algorithm>
 #include <cmath>
+#include <tuple>
 
 CTController::CTController(QObject* parent)
     : QObject(parent)
@@ -26,6 +27,62 @@ void CTController::setCurrentAlgorithm(const QString& algorithm)
         currentAlgorithm_ = algorithm;
         emit currentAlgorithmChanged();
     }
+}
+
+void CTController::generateSheppLogan()
+{
+    constexpr int N = 256;
+    constexpr int M = 256;
+    std::vector<double> data(static_cast<std::size_t>(M * N), 0.0);
+
+    // Standard Shepp-Logan phantom ellipses:
+    // {intensity, x0, y0, a, b, rotation_degrees}
+    const std::vector<std::tuple<double, double, double, double, double, double>> ellipses = {
+        { 1.0,   0.0,     0.0,     0.69,   0.92,    0.0   },
+        {-0.8,   0.0,    -0.0184,  0.6624, 0.874,   0.0   },
+        {-0.2,   0.22,    0.0,     0.11,   0.31,   -18.0  },
+        {-0.2,  -0.22,    0.0,     0.16,   0.41,   18.0   },
+        { 0.1,   0.0,     0.35,    0.21,   0.25,    0.0   },
+        { 0.1,   0.0,     0.1,     0.046,  0.046,   0.0   },
+        { 0.1,   0.0,    -0.1,     0.046,  0.046,   0.0   },
+        { 0.1,  -0.08,   -0.605,   0.046,  0.023,   0.0   },
+        { 0.1,   0.0,    -0.605,   0.023,  0.023,   0.0   },
+        { 0.1,   0.06,   -0.605,   0.023,  0.046,   0.0   }
+    };
+
+    constexpr double DEG2RAD = 3.14159265358979323846 / 180.0;
+    for (int y = 0; y < M; ++y) {
+        for (int x = 0; x < N; ++x) {
+            // Map pixel to normalized coordinates [-1, 1]
+            const double nx = (x - N / 2.0) / (N / 2.0);
+            const double ny = (y - M / 2.0) / (M / 2.0);
+            double val = 0.0;
+            for (const auto& e : ellipses) {
+                const double intensity = std::get<0>(e);
+                const double x0        = std::get<1>(e);
+                const double y0        = std::get<2>(e);
+                const double a         = std::get<3>(e);
+                const double b         = std::get<4>(e);
+                const double theta     = std::get<5>(e) * DEG2RAD;
+                const double cosT = std::cos(theta);
+                const double sinT = std::sin(theta);
+                const double dx = cosT * (nx - x0) + sinT * (ny - y0);
+                const double dy = -sinT * (nx - x0) + cosT * (ny - y0);
+                if ((dx * dx) / (a * a) + (dy * dy) / (b * b) <= 1.0) {
+                    val += intensity;
+                }
+            }
+            data[static_cast<std::size_t>(y * N + x)] = val;
+        }
+    }
+
+    auto matrix = std::make_unique<Matrix>(std::move(data), M, N);
+    phantomImage_ = matrix->qimage();
+    std::vector<double> pixelData = matrix->toVector();
+    drawingArea_->setPhantom(phantomImage_, pixelData);
+
+    phantomLoaded_ = true;
+    emit phantomLoadedChanged();
 }
 
 void CTController::loadPhantom(const QUrl& fileUrl)
@@ -75,6 +132,13 @@ void CTController::generateSinogram(int projections, double voltage, double curr
     
     // Setup system matrix and generate sinogram
     drawingArea_->setupSystemMatrix();
+
+    // Apply noise model based on voltage / current (lower mA → more noise)
+    if (voltage > 0 && current > 0) {
+        const double baseStd = 5.0;
+        const double stdDev = baseStd * (80.0 / voltage) * std::sqrt(100.0 / current);
+        drawingArea_->addNoise(stdDev);
+    }
 
     // Create sinogram image from the data
     auto& sinogramData = drawingArea_->sinogram();
@@ -179,8 +243,10 @@ void CTController::artUpdate(int iteration, std::vector<double> image)
 void CTController::artFinished()
 {
     reconstructionRunning_ = false;
+    progress_ = 1.0;
     artThread_.reset();
     emit reconstructionRunningChanged();
+    emit progressChanged(progress_);
     emit reconstructionFinished();
 }
 
@@ -207,8 +273,10 @@ void CTController::sirtUpdate(int iteration, std::vector<double> image)
 void CTController::sirtFinished()
 {
     reconstructionRunning_ = false;
+    progress_ = 1.0;
     sirtThread_.reset();
     emit reconstructionRunningChanged();
+    emit progressChanged(progress_);
     emit reconstructionFinished();
 }
 

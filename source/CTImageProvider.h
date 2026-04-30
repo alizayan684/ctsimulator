@@ -1,4 +1,4 @@
-/****************************
+`   /****************************
  * CT Image Provider
  * Provides phantom, sinogram, and reconstruction images to QML
  *****************************/
@@ -10,10 +10,11 @@
 
 class CTController;
 
-class CTImageProvider : public QQuickImageProvider
+class CTImageProvider : public QObject, public QQuickImageProvider
 {
+    Q_OBJECT
 public:
-    explicit CTImageProvider(CTController* controller);
+    explicit CTImageProvider(CTController* controller, QObject* parent = nullptr);
 
     [[nodiscard]] QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize) override;
 

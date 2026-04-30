@@ -1,7 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Layouts 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Dialogs 2.15
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Dialogs
 
 Item {
     id: root
@@ -66,6 +66,9 @@ Item {
         function onReconstructionUpdated(iteration) {
             reconstructionImage.source = "image://ct/reconstruction"
         }
+        function onReconstructionFinished() {
+            reconstructionImage.source = "image://ct/reconstruction"
+        }
     }
 
     // 🎨 reusable button style
@@ -123,6 +126,7 @@ Item {
                         id: phantomCombo
                         objectName: "phantomComboBox"
                         model: ["Shepp-Logan"]
+                        onActivated: ctController.generateSheppLogan()
                     }
 
                     Loader {

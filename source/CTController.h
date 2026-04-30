@@ -41,6 +41,7 @@ public:
 
     // QML-invokable methods
     Q_INVOKABLE void loadPhantom(const QUrl& fileUrl);
+    Q_INVOKABLE void generateSheppLogan();
     Q_INVOKABLE void generateSinogram(int projections, double voltage, double current);
     Q_INVOKABLE void startReconstruction();
     Q_INVOKABLE void stopReconstruction();

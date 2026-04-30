@@ -1,4 +1,4 @@
-#include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickImageProvider>
@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
 
@@ -16,8 +16,9 @@ int main(int argc, char *argv[])
     CTController controller;
     engine.rootContext()->setContextProperty("ctController", &controller);
 
-    // Register image provider
-    engine.addImageProvider("ct", new CTImageProvider(&controller));
+    // Register image provider (parented to engine so it is cleaned up)
+    auto* provider = new CTImageProvider(&controller, &engine);
+    engine.addImageProvider("ct", provider);
 
     QObject::connect(
         &engine,
