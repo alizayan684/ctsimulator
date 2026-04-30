@@ -1,11 +1,72 @@
 import QtQuick 2.15
 import QtQuick.Layouts 2.15
 import QtQuick.Controls 2.15
+import QtQuick.Dialogs 2.15
 
 Item {
     id: root
     objectName: "mainView"
     anchors.fill: parent
+
+    // File dialog for loading phantom
+    FileDialog {
+        id: phantomFileDialog
+        title: "Select Phantom File"
+        nameFilters: ["Phantom files (*.txt *.raw)", "All files (*)"]
+        onAccepted: {
+            ctController.loadPhantom(selectedFile)
+        }
+    }
+
+    // File dialog for exporting image
+    FileDialog {
+        id: exportFileDialog
+        title: "Export Image"
+        nameFilters: ["PNG images (*.png)", "JPEG images (*.jpg)", "All files (*)"]
+        fileMode: FileDialog.SaveFile
+        onAccepted: {
+            ctController.exportImage(selectedFile)
+        }
+    }
+
+    // Error dialog
+    Dialog {
+        id: errorDialog
+        title: "Error"
+        modal: true
+        anchors.centerIn: parent
+        width: 300
+
+        property string errorMessage: ""
+
+        Label {
+            text: errorDialog.errorMessage
+            color: "white"
+            wrapMode: Text.Wrap
+            width: parent.width - 40
+        }
+
+        standardButtons: Dialog.Ok
+    }
+
+    Connections {
+        target: ctController
+        function onError(message) {
+            errorDialog.errorMessage = message
+            errorDialog.open()
+        }
+        function onPhantomLoadedChanged() {
+            if (ctController.phantomLoaded) {
+                phantomImage.source = "image://ct/phantom"
+            }
+        }
+        function onSinogramReady() {
+            sinogramImage.source = "image://ct/sinogram"
+        }
+        function onReconstructionUpdated(iteration) {
+            reconstructionImage.source = "image://ct/reconstruction"
+        }
+    }
 
     // 🎨 reusable button style
     Component {
@@ -69,6 +130,7 @@ Item {
                         onLoaded: {
                             item.backendName = "Upload Phantom"
                             item.objectName = "uploadPhantomButton"
+                            item.onClicked.connect(function() { phantomFileDialog.open() })
                         }
                     }
 
@@ -113,7 +175,27 @@ Item {
                         text: "Reconstruction View"
                         objectName: "reconstructionLabel"
                         color: "white"
+                        anchors.top: parent.top
+                        anchors.left: parent.left
                         anchors.margins: 10
+                    }
+
+                    Image {
+                        id: phantomImage
+                        anchors.centerIn: parent
+                        width: parent.width * 0.9
+                        height: parent.height * 0.9
+                        fillMode: Image.PreserveAspectFit
+                        visible: ctController.phantomLoaded
+                    }
+
+                    Image {
+                        id: reconstructionImage
+                        anchors.centerIn: parent
+                        width: parent.width * 0.9
+                        height: parent.height * 0.9
+                        fillMode: Image.PreserveAspectFit
+                        visible: !phantomImage.visible
                     }
                 }
 
@@ -128,7 +210,17 @@ Item {
                         text: "Sinogram View"
                         objectName: "sinogramLabel"
                         color: "white"
+                        anchors.top: parent.top
+                        anchors.left: parent.left
                         anchors.margins: 10
+                    }
+
+                    Image {
+                        id: sinogramImage
+                        anchors.centerIn: parent
+                        width: parent.width * 0.95
+                        height: parent.height * 0.8
+                        fillMode: Image.PreserveAspectFit
                     }
                 }
 
@@ -157,7 +249,8 @@ Item {
                                 id: reconstructionProgressBar
                                 objectName: "progressBar"
                                 width: 200
-                                value: 0.7
+                                value: ctController.progress
+                                visible: ctController.reconstructionRunning
                             }
                         }
                     }
@@ -177,6 +270,8 @@ Item {
                                 onLoaded: {
                                     item.backendName = "Start Reconstruction"
                                     item.objectName = "startButton"
+                                    item.enabled = Qt.binding(function() { return ctController.phantomLoaded && !ctController.reconstructionRunning })
+                                    item.onClicked.connect(function() { ctController.startReconstruction() })
                                 }
                             }
 
@@ -185,6 +280,8 @@ Item {
                                 onLoaded: {
                                     item.backendName = "Stop Reconstruction"
                                     item.objectName = "stopButton"
+                                    item.enabled = Qt.binding(function() { return ctController.reconstructionRunning })
+                                    item.onClicked.connect(function() { ctController.stopReconstruction() })
                                 }
                             }
                         }
@@ -211,22 +308,46 @@ Item {
                         color: "white"
                     }
 
+                    Label {
+                        text: "Projections: " + projectionsSlider.value.toFixed(0)
+                        color: "white"
+                    }
                     Slider {
                         id: projectionsSlider
                         objectName: "projectionsSlider"
-                        from: 0; to: 720; value: 180
+                        from: 1; to: 720; value: 180
                     }
 
+                    Label {
+                        text: "Voltage: " + voltageSlider.value.toFixed(0) + " kV"
+                        color: "white"
+                    }
                     Slider {
                         id: voltageSlider
                         objectName: "voltageSlider"
                         from: 80; to: 150; value: 120
                     }
 
+                    Label {
+                        text: "Current: " + currentSlider.value.toFixed(0) + " mA"
+                        color: "white"
+                    }
                     Slider {
                         id: currentSlider
                         objectName: "currentSlider"
                         from: 10; to: 300; value: 100
+                    }
+
+                    Loader {
+                        sourceComponent: styledButton
+                        onLoaded: {
+                            item.backendName = "Generate Sinogram"
+                            item.objectName = "generateSinogramButton"
+                            item.enabled = Qt.binding(function() { return ctController.phantomLoaded && !ctController.reconstructionRunning })
+                            item.onClicked.connect(function() {
+                                ctController.generateSinogram(projectionsSlider.value, voltageSlider.value, currentSlider.value)
+                            })
+                        }
                     }
 
                     Label {
@@ -238,7 +359,9 @@ Item {
                     ComboBox {
                         id: algorithmCombo
                         objectName: "algorithmComboBox"
-                        model: ["FBP", "SIRT"]
+                        model: ["ART", "SIRT"]
+                        currentIndex: model.indexOf(ctController.currentAlgorithm)
+                        onCurrentTextChanged: ctController.currentAlgorithm = currentText
                     }
 
                     Item { Layout.fillHeight: true }
@@ -248,6 +371,7 @@ Item {
                         onLoaded: {
                             item.backendName = "Export Image"
                             item.objectName = "exportImageButton"
+                            item.onClicked.connect(function() { exportFileDialog.open() })
                         }
                     }
 
@@ -256,6 +380,7 @@ Item {
                         onLoaded: {
                             item.backendName = "Export DICOM"
                             item.objectName = "exportDicomButton"
+                            item.onClicked.connect(function() { ctController.exportDICOM("") })  // Will show error dialog
                         }
                     }
                 }
