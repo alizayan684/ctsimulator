@@ -1,4 +1,4 @@
-#include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QFile>
@@ -9,7 +9,9 @@
 #include "src/visualization/ImageViewer.h"
 #include "src/visualization/MetricsCalculator.h"
 #include "src/visualization/ROITools.h"
-
+#include <QQuickImageProvider>
+#include "source/CTController.h"
+#include "source/CTImageProvider.h"
 void customMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
     QFile outFile("debug_log.txt");
     outFile.open(QIODevice::WriteOnly | QIODevice::Append);
@@ -21,7 +23,7 @@ int main(int argc, char *argv[])
 {
     qInstallMessageHandler(customMessageHandler);
     qputenv("QT_QUICK_CONTROLS_STYLE", "Basic");
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     // Register Visualization Types
     qmlRegisterType<visualization::RayPathVisualizer>("CT.Visualization", 1, 0, "RayPathVisualizer");
@@ -50,6 +52,15 @@ int main(int argc, char *argv[])
         });
 
     QQmlApplicationEngine engine;
+
+    // Create and register CTController
+    CTController controller;
+    engine.rootContext()->setContextProperty("ctController", &controller);
+
+    // Register image provider (parented to engine so it is cleaned up)
+    auto* provider = new CTImageProvider(&controller, &engine);
+    engine.addImageProvider("ct", provider);
+
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreationFailed,
