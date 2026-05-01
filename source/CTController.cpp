@@ -198,21 +198,41 @@ void CTController::startReconstruction()
     emit progressChanged(progress_);
     emit currentIterationChanged(currentIteration_);
 
-    if (currentAlgorithm_ == "ART") {
-        artThread_ = std::make_unique<ArtThread>(drawingArea_.get(), 50, 0.1, 1, this);
-        connect(artThread_.get(), &ArtThread::updateReady, this, &CTController::artUpdate);
-        connect(artThread_.get(), &ArtThread::singleIteration, this, &CTController::artSingleIteration);
-        artThread_->start();
+    // ── Create the algorithm via unified framework ──────────────────────────
+    if (currentAlgorithm_ == "FBP") {
+        activeAlgorithm_ = std::make_unique<FBP>(
+            drawingArea_.get(), FBP::FilterType::RamLak, this);
+    } else if (currentAlgorithm_ == "MLEM") {
+        activeAlgorithm_ = std::make_unique<MLEM>(
+            drawingArea_.get(), totalSweeps_, 1, this);
     } else if (currentAlgorithm_ == "SIRT") {
-        sirtThread_ = std::make_unique<SirtThread>(drawingArea_.get(), 50, 0.1, 1, this);
-        connect(sirtThread_.get(), &SirtThread::updateReady, this, &CTController::sirtUpdate);
-        connect(sirtThread_.get(), &SirtThread::singleIteration, this, &CTController::sirtSingleIteration);
-        sirtThread_->start();
+        activeAlgorithm_ = std::make_unique<SIRT>(
+            drawingArea_.get(), totalSweeps_, 0.1, 1, this);
+    } else {
+        // Default to ART
+        activeAlgorithm_ = std::make_unique<ART>(
+            drawingArea_.get(), totalSweeps_, 0.1, 1, this);
     }
+
+    connect(activeAlgorithm_.get(), &ReconstructionAlgorithm::updateReady,
+            this, &CTController::onAlgorithmUpdate);
+    connect(activeAlgorithm_.get(), &ReconstructionAlgorithm::singleIteration,
+            this, &CTController::onAlgorithmIteration);
+    connect(activeAlgorithm_.get(), &QThread::finished,
+            this, &CTController::onAlgorithmFinished);
+    activeAlgorithm_->start();
 }
 
 void CTController::stopReconstruction()
 {
+    // Stop unified algorithm if running
+    if (activeAlgorithm_) {
+        activeAlgorithm_->running = false;
+        activeAlgorithm_->wait();
+        onAlgorithmFinished();
+        return;
+    }
+    // Legacy fallback
     if (artThread_) {
         artThread_->running = false;
         artThread_->wait();
@@ -283,6 +303,37 @@ void CTController::sirtFinished()
 void CTController::sirtSingleIteration(int iteration, double residual)
 {
     progress_ = static_cast<double>(iteration) / 50.0;
+    emit progressChanged(progress_);
+}
+
+// ─── Unified algorithm callbacks ────────────────────────────────────────────
+void CTController::onAlgorithmUpdate(int iteration, std::vector<double> image)
+{
+    currentIteration_ = iteration;
+    reconstructionData_ = std::move(image);
+
+    QSize phantomSize = drawingArea_->phantomSize();
+    reconstructionWidth_ = phantomSize.width();
+    reconstructionHeight_ = phantomSize.height();
+
+    updateReconstructionImage(reconstructionData_, reconstructionWidth_, reconstructionHeight_);
+    emit reconstructionUpdated(iteration);
+    emit currentIterationChanged(iteration);
+}
+
+void CTController::onAlgorithmFinished()
+{
+    reconstructionRunning_ = false;
+    progress_ = 1.0;
+    activeAlgorithm_.reset();
+    emit reconstructionRunningChanged();
+    emit progressChanged(progress_);
+    emit reconstructionFinished();
+}
+
+void CTController::onAlgorithmIteration(int iteration, double residual)
+{
+    progress_ = static_cast<double>(iteration) / static_cast<double>(totalSweeps_);
     emit progressChanged(progress_);
 }
 

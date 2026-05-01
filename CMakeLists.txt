@@ -44,12 +44,17 @@ qt_add_executable(appuntitled
     src/visualization/MetricsCalculator.cpp
     src/visualization/ROITools.cpp
     src/visualization/RayPathVisualizer.cpp
+    src/reconstruction/ReconstructionAlgorithm.cpp
+    src/reconstruction/FBP.cpp
+    src/reconstruction/MLEM.cpp
+    src/reconstruction/ART.cpp
+    src/reconstruction/SIRT.cpp
     ${BACKEND_SOURCES}
     ${BACKEND_HEADERS}
 )
 
-# Add include directory for source files
-target_include_directories(appuntitled PRIVATE source)
+# Add include directories for source files
+target_include_directories(appuntitled PRIVATE source src/reconstruction)
 
 qt_add_qml_module(appuntitled
     URI untitled
