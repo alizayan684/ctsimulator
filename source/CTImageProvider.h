@@ -6,6 +6,9 @@
 #pragma once
 
 #include <QQuickImageProvider>
+#include <QObject>
+#include <QQuickImageProvider>
+#include <QImage>
 #include <QImage>
 
 class CTController;

@@ -5,10 +5,15 @@ project(ctsimulator VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(QT_QML_GENERATE_QMLLS_INI ON)
+set(CMAKE_PREFIX_PATH "C:/Qt6/6.11.0/mingw_64")
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Widgets Concurrent)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+find_package(Qt6 REQUIRED COMPONENTS Core Quick Widgets Concurrent)
 
-qt_standard_project_setup(REQUIRES 6.5)
+qt_policy(SET QTP0004 NEW)
+qt_policy(SET QTP0001 NEW)
 
 # Collect all backend source files
 set(BACKEND_SOURCES

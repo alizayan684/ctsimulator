@@ -14,7 +14,9 @@
 #include "source/CTImageProvider.h"
 void customMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
     QFile outFile("debug_log.txt");
-    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    if (!outFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
+        return;
+    }
     QTextStream ts(&outFile);
     ts << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ") << msg << "\n";
 }
