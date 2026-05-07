@@ -6,8 +6,7 @@
 #include "CTController.h"
 
 CTImageProvider::CTImageProvider(CTController* controller, QObject* parent)
-    : QObject(parent)
-    , QQuickImageProvider(QQuickImageProvider::Image)
+    : QQuickImageProvider(QQuickImageProvider::Image)
     , controller_(controller)
 {
 }

@@ -13,7 +13,7 @@
 
 class CTController;
 
-class CTImageProvider : public QObject, public QQuickImageProvider
+class CTImageProvider : public QQuickImageProvider
 {
     Q_OBJECT
 public:
