@@ -1,4 +1,4 @@
-`   /****************************
+/****************************
  * CT Image Provider
  * Provides phantom, sinogram, and reconstruction images to QML
  *****************************/
@@ -10,7 +10,7 @@
 
 class CTController;
 
-class CTImageProvider : public QObject, public QQuickImageProvider
+class CTImageProvider : public QQuickImageProvider
 {
     Q_OBJECT
 public:
