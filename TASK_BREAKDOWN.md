@@ -3,14 +3,13 @@
 ## Project Overview
 Reimplement the CTSimulator educational tool by:
 1. Adding missing reconstruction algorithms (FBP, MLEM)
-2. Replacing deprecated Qt4 with modern Qt6
 3. Building a modern, intuitive frontend
 4. Creating interactive educational tutorials
 5. Implementing advanced visualization features
 
 ---
 
-## Member 1: Core Reconstruction Algorithms
+## TASK 1: Core Reconstruction Algorithms
 
 ### Primary Responsibility
 Implement the missing reconstruction algorithms and create a unified algorithm framework.
@@ -49,18 +48,13 @@ src/reconstruction/
 └── SIRT.h                         # Refactor existing
 ```
 
-### Integration Points
-- Work with Member 2 on threading model
-- Work with Member 3 on algorithm selection UI
-- Work with Member 4 on visualization hooks
-
 ### Deliverables
 - ✅ All 4 algorithms produce valid reconstructions
 - ✅ Clean API for frontend integration
 
 ---
 
-## Member 2: Framework Migration & Modernization
+## TASK 2: Framework Migration & Modernization
 
 ### Primary Responsibility
 Migrate from deprecated Qt4 to Qt6 and modernize the C++ codebase.
@@ -69,8 +63,7 @@ Migrate from deprecated Qt4 to Qt6 and modernize the C++ codebase.
 - **Qt4 → Qt6 Migration**
   - Update all Qt includes and APIs
   - Replace deprecated signals/slots syntax
-  - Migrate QPainter to modern rendering (coordinate with Member 4)
-  - Update build system from qmake to CMake
+  - Migrate QPainter to modern rendering 
 
 - **C++ Modernization (C++17/20)**
   - Replace raw pointers with smart pointers (`std::unique_ptr`, `std::shared_ptr`)
@@ -85,26 +78,14 @@ Migrate from deprecated Qt4 to Qt6 and modernize the C++ codebase.
   - Add bounds checking
   - Implement proper exception handling
 
-### Files to Modify
-```
-All existing .h and .cpp files need modernization:
-src/*.h, src/*.cpp
-src/main.cpp
-```
-
-### Integration Points
-- Coordinate with Member 1 on algorithm interface design
-- Coordinate with Member 3 on QML/C++ integration
-- Coordinate with Member 4 on rendering backend
 
 ### Success Metrics
-- ✅ Zero compiler warnings 
 - ✅ All existing functionality preserved
 - ✅ Modern C++ best practices throughout
 
 ---
 
-##  Member 3: Modern Frontend & User Experience
+##  TASK 3: Modern Frontend & User Experience
 
 ### Primary Responsibility
 Design and implement a modern, intuitive user interface with excellent UX.
@@ -113,7 +94,6 @@ Design and implement a modern, intuitive user interface with excellent UX.
 - **UI Framework Migration**
   - Replace Qt Widgets with Qt Quick/QML
   - Responsive design 
-  - Dark/Light theme support
 
 - **Main Interface Components**
   - Phantom selection panel (preset + custom upload)
@@ -128,53 +108,17 @@ Design and implement a modern, intuitive user interface with excellent UX.
   - Save/Load session configurations (JSON)
 
 - **User Workflow**
-  - Guided step-by-step workflow
   - Undo/Redo functionality
   - Parameter presets
   - Quick comparison views (original vs reconstructed)
 
-### Files to Create
-```
-qml/
-├── Main.qml                       # Application root
-├── components/
-│   ├── PhantomSelector.qml
-│   ├── AcquisitionControls.qml
-│   ├── AlgorithmPanel.qml
-│   ├── ReconstructionView.qml
-│   ├── SinogramView.qml
-│   ├── ProgressBar.qml
-│   └── ThemeManager.qml
-├── dialogs/
-│   ├── ExportDialog.qml
-│   ├── SettingsDialog.qml
-│   └── AboutDialog.qml
-└── layouts/
-    ├── DefaultLayout.qml
-    └── ComparisonLayout.qml
-
-src/frontend/
-├── MainWindow.h
-├── MainWindow.cpp
-├── ReconstructionController.h     # Bridge between QML and C++
-├── ReconstructionController.cpp
-└── ImageExporter.h
-└── ImageExporter.cpp
-```
-
-### Integration Points
-- Work with Member 1 on algorithm parameter exposure
-- Work with Member 2 on QML/C++ integration patterns
-- Work with Member 4 on visualization component integration
-
 ### Success Metrics
-- ✅ All parameters accessible and well-documented
 - ✅ Responsive UI (no freezing during computation)
 - ✅ Professional, modern appearance
 
 ---
 
-## Member 4: Advanced Visualization & Educational Tutorials
+## TASK 4: Advanced Visualization & Educational Tutorials
 
 ### Primary Responsibility
 Create advanced visualization features and interactive educational content.
@@ -210,54 +154,9 @@ Create advanced visualization features and interactive educational content.
   - Tooltips with physics explanations
   - Glossary of CT terms
 
-### Files to Create
-```
-src/visualization/
-├── ImageViewer.h
-├── ImageViewer.cpp
-├── ColormapManager.h
-├── ColormapManager.cpp
-├── ROITools.h
-├── ROITools.cpp
-├── MetricsCalculator.h        # RMSE, SSIM, PSNR
-├── MetricsCalculator.cpp
-└── RayPathVisualizer.h
-└── RayPathVisualizer.cpp
-
-qml/tutorials/
-├── TutorialManager.qml
-├── IntroductionTutorial.qml
-├── ProjectionsTutorial.qml
-├── AlgorithmsTutorial.qml
-├── NoiseTutorial.qml
-└── OptimizationTutorial.qml
-
-resources/
-├── colormaps/                 # Viridis, Plasma, etc.
-├── tutorial_assets/
-└── icons/
-```
-
-### Integration Points
-- Work with Member 1 on algorithm iteration visualization
-- Work with Member 2 on rendering performance
-- Work with Member 3 on tutorial UI integration
 
 ### Success Metrics
 - ✅ All visualization tools functional and responsive
 - ✅ 5 complete interactive tutorials
 - ✅ Error metrics match reference implementations
 - ✅ Smooth zoom/pan at high magnification
-
-
-## 🔧 Recommended Technology Stack
-
-| Component | Technology |
-|-----------|------------|
-| Framework | Qt 6.6+ LTS |
-| Language | C++17 or C++20 |
-| UI | QML with Qt Quick Controls 2 |
-| Build | CMake 3.20+ |
-| Rendering | Qt Quick Scene Graph (or OpenGL for Member 4) |
-| Documentation | Doxygen + Markdown |
-| Package Manager | vcpkg or Conan |
