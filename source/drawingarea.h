@@ -11,22 +11,20 @@
 #include "utility.h"
 #include "matrix.h"
 
-#include <QWidget>
-#include <QPainter>
-#include <QStyleOption>
-#include <QTimer>
+#include <QObject>
+#include <QImage>
+#include <QSize>
 
 #include <complex>
-#include <memory>
 #include <vector>
 
 using Complex = std::complex<double>;
 
-class DrawingArea : public QWidget
+class DrawingArea : public QObject
 {
     Q_OBJECT
 public:
-    explicit DrawingArea(QWidget* parent = nullptr);
+    explicit DrawingArea(QObject* parent = nullptr);
 
     void setPhantom(QImage image, std::vector<double> matrixData);
     void loadSourceAndDetector(int q);
@@ -47,20 +45,6 @@ public:
     [[nodiscard]] const std::vector<std::vector<Complex>>& sourceProjections()   const { return sourceProjections_; }
     [[nodiscard]] const std::vector<std::vector<Complex>>& detectorProjections() const { return detectorProjections_; }
 
-    bool visualizeLine = false;
-
-    [[nodiscard]] double zoomFactor() const { return zoomFactor_; }
-    void setZoomFactor(double z) { zoomFactor_ = z; update(); }
-
-signals:
-    void animationLoaded();
-
-public slots:
-    void animate();
-
-protected:
-    void paintEvent(QPaintEvent* event) override;
-
 private:
     static constexpr double PI = 3.14159265358979323846;
 
@@ -78,14 +62,7 @@ private:
     std::vector<std::vector<Complex>> sourceProjections_;
     std::vector<std::vector<Complex>> detectorProjections_;
 
-    // Current frame pointers (non-owning views into the projection arrays)
-    const Complex* currentSource_   = nullptr;
-    const Complex* currentDetector_ = nullptr;
-
-    // Animation state
     int  numProjections_  = 0;
-    int  animationIndex_  = 0;
-    std::unique_ptr<QTimer> timer_;
 
     // System matrix A[row][col] where row = projection*detector, col = pixel
     std::vector<std::vector<double>> A_;
@@ -95,8 +72,4 @@ private:
     std::vector<std::vector<double>> sinogram_;
     QSize sinogram_size_;
 
-    // Widget canvas size
-    int canvasWidth_  = 512;
-    int canvasHeight_ = 512;
-    double zoomFactor_ = 1.0;
 };

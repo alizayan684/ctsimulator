@@ -9,7 +9,6 @@
 #pragma once
 
 #include <vector>
-#include <memory>
 #include <QString>
 #include <QSize>
 #include <QImage>

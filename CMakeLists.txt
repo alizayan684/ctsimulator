@@ -21,12 +21,9 @@ set(BACKEND_SOURCES
     source/CTImageProvider.cpp
     source/drawingarea.cpp
     source/matrix.cpp
-    source/matrixwidget.cpp
     source/utility.cpp
     source/artthread.cpp
     source/sirtthread.cpp
-    source/imagewidget.cpp
-    source/sinogramwidget.cpp
 )
 
 set(BACKEND_HEADERS
@@ -34,12 +31,9 @@ set(BACKEND_HEADERS
     source/CTImageProvider.h
     source/drawingarea.h
     source/matrix.h
-    source/matrixwidget.h
     source/utility.h
     source/artthread.h
     source/sirtthread.h
-    source/imagewidget.h
-    source/sinogramwidget.h
 )
 
 qt_add_executable(appuntitled

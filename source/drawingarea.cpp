@@ -8,18 +8,13 @@
 
 #include "drawingarea.h"
 
-#include <QPen>
-#include <QPointF>
-
 #include <cmath>
 #include <complex>
-#include <iostream>
 #include <random>
 
-DrawingArea::DrawingArea(QWidget* parent)
-    : QWidget(parent)
+DrawingArea::DrawingArea(QObject* parent)
+    : QObject(parent)
 {
-    setStyleSheet("background-color:black;");
 }
 
 // ── Public setup API ─────────────────────────────────────────────────────────
@@ -28,7 +23,6 @@ void DrawingArea::setPhantom(QImage image, std::vector<double> matrixData)
 {
     phantomImage_ = std::move(image);
     pixelData_    = std::move(matrixData);
-    update();
 }
 
 QSize DrawingArea::phantomSize() const
@@ -56,10 +50,6 @@ void DrawingArea::loadSourceAndDetector(int q)
         const double imag = -h * q + i * h;
         detector_[static_cast<std::size_t>(i)] = Complex(-R, imag);
     }
-
-    currentSource_   = source_.data();
-    currentDetector_ = detector_.data();
-    update();
 }
 
 int DrawingArea::loadMovement(double startAngle, double endAngle, double incrementAngle)
@@ -85,32 +75,9 @@ int DrawingArea::loadMovement(double startAngle, double endAngle, double increme
                 detector_[static_cast<std::size_t>(z)] * rotation;
     }
 
-    animationIndex_  = 0;
-    currentSource_   = sourceProjections_[0].data();
-    currentDetector_ = detectorProjections_[0].data();
-
-    // Use a unique_ptr so the timer is automatically cleaned up
-    timer_ = std::make_unique<QTimer>(this);
-    timer_->setInterval(5);
-    connect(timer_.get(), &QTimer::timeout, this, &DrawingArea::animate);
-    timer_->start();
-
     return numProjections_;
 }
 
-void DrawingArea::animate()
-{
-    if (animationIndex_ < numProjections_ - 1) {
-        ++animationIndex_;
-        currentSource_   = sourceProjections_[static_cast<std::size_t>(animationIndex_)].data();
-        currentDetector_ = detectorProjections_[static_cast<std::size_t>(animationIndex_)].data();
-        std::cout << "Animation index: " << animationIndex_ << '\n';
-        update();
-    } else {
-        timer_->stop();
-        emit animationLoaded();
-    }
-}
 
 void DrawingArea::addNoise(double standardDeviation)
 {
@@ -173,62 +140,3 @@ void DrawingArea::setupSystemMatrix()
     }
 }
 
-// ── Rendering ────────────────────────────────────────────────────────────────
-
-void DrawingArea::paintEvent(QPaintEvent* /*event*/)
-{
-    QPainter painter(this);
-
-    // Let the style sheet take effect
-    QStyleOption opt;
-    opt.initFrom(this);
-    style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
-
-    // Draw phantom image centred in the widget
-    if (!phantomImage_.isNull()) {
-        const QSize scaledSize(
-            static_cast<int>(phantomImage_.width()  * zoomFactor_),
-            static_cast<int>(phantomImage_.height() * zoomFactor_));
-        const QImage scaled = phantomImage_.scaled(scaledSize);
-
-        const QPointF origin(
-            canvasWidth_  / 2.0 - scaled.width()  / 2.0,
-            canvasHeight_ / 2.0 - scaled.height() / 2.0);
-        painter.drawImage(origin, scaled);
-    }
-
-    const int cx = canvasWidth_  / 2;
-    const int cy = canvasHeight_ / 2;
-
-    // Draw source points (red)
-    if (currentSource_ != nullptr) {
-        painter.setPen(QPen(Qt::red, 1, Qt::SolidLine));
-        for (int i = 0; i < numSourceElements_; ++i) {
-            const int x = static_cast<int>(currentSource_[i].real() * zoomFactor_) + cx;
-            const int y = static_cast<int>(currentSource_[i].imag() * zoomFactor_) + cy;
-            painter.drawPoint(x, y);
-        }
-    }
-
-    // Draw detector points (blue)
-    if (currentDetector_ != nullptr) {
-        painter.setPen(QPen(Qt::blue, 1, Qt::SolidLine));
-        for (int i = 0; i < numDetectorElements_; ++i) {
-            const int x = static_cast<int>(currentDetector_[i].real() * zoomFactor_) + cx;
-            const int y = static_cast<int>(currentDetector_[i].imag() * zoomFactor_) + cy;
-            painter.drawPoint(x, y);
-        }
-    }
-
-    // Draw source→detector ray lines (yellow)
-    if (visualizeLine && currentSource_ != nullptr && currentDetector_ != nullptr) {
-        painter.setPen(QPen(Qt::yellow, 1, Qt::SolidLine));
-        for (int i = 0; i < numDetectorElements_; ++i) {
-            const int xs = static_cast<int>(currentSource_[i].real())   + cx;
-            const int ys = static_cast<int>(currentSource_[i].imag())   + cy;
-            const int xd = static_cast<int>(currentDetector_[i].real()) + cx;
-            const int yd = static_cast<int>(currentDetector_[i].imag()) + cy;
-            painter.drawLine(xs, ys, xd, yd);
-        }
-    }
-}

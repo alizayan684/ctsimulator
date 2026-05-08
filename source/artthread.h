@@ -13,7 +13,6 @@
 #include <QThread>
 
 #include <atomic>
-#include <iostream>
 #include <vector>
 
 // Runs the ART (Algebraic Reconstruction Technique) algorithm on a

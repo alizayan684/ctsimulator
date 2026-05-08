@@ -16,7 +16,7 @@ CTController::CTController(QObject* parent)
     : QObject(parent)
     , drawingArea_(std::make_unique<DrawingArea>())
 {
-    drawingArea_->setZoomFactor(1.0);
+
 }
 
 CTController::~CTController() = default;
