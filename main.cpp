@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDateTime>
+#include <vector>
 #include "src/visualization/RayPathVisualizer.h"
 #include "src/visualization/ColormapManager.h"
 #include "src/visualization/ImageViewer.h"
@@ -26,6 +27,8 @@ int main(int argc, char *argv[])
     qInstallMessageHandler(customMessageHandler);
     qputenv("QT_QUICK_CONTROLS_STYLE", "Basic");
     QApplication app(argc, argv);
+    
+    qRegisterMetaType<std::vector<double>>("std::vector<double>");
 
     // Register Visualization Types
     qmlRegisterType<visualization::RayPathVisualizer>("CT.Visualization", 1, 0, "RayPathVisualizer");
@@ -60,7 +63,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("ctController", &controller);
 
     // Register image provider (parented to engine so it is cleaned up)
-    auto* provider = new CTImageProvider(&controller, &engine);
+    auto* provider = new CTImageProvider(&controller);
     engine.addImageProvider("ct", provider);
 
     QObject::connect(

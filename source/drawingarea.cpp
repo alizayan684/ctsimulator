@@ -107,7 +107,7 @@ void DrawingArea::setupSystemMatrix()
               std::vector<double>(static_cast<std::size_t>(totalPixels), 0.0));
 
     A_size_.setWidth(totalPixels);
-    A_size_.setHeight(numSourceElements_ * numProjections_);
+    A_size_.setHeight(numDetectorElements_ * numProjections_);
 
     sinogram_.assign(static_cast<std::size_t>(numProjections_),
                      std::vector<double>(static_cast<std::size_t>(numDetectorElements_), 0.0));
@@ -116,7 +116,7 @@ void DrawingArea::setupSystemMatrix()
     sinogram_size_.setWidth(numProjections_);
 
     for (int i = 0; i < numProjections_; ++i) {
-        for (int j = 0; j < numSourceElements_; ++j) {
+        for (int j = 0; j < numDetectorElements_; ++j) {
             const auto& src = sourceProjections_[static_cast<std::size_t>(i)][static_cast<std::size_t>(j)];
             const auto& det = detectorProjections_[static_cast<std::size_t>(i)][static_cast<std::size_t>(j)];
 
@@ -126,6 +126,12 @@ void DrawingArea::setupSystemMatrix()
                 det.real(), det.imag(),
                 static_cast<double>(phantomImage_.height()),
                 static_cast<double>(phantomImage_.width()));
+
+            if (ray.empty()) {
+                hasError_ = true;
+                errorMessage_ = QStringLiteral("Ray trace failed for projection %1, detector %2").arg(i).arg(j);
+                return;
+            }
 
             const std::size_t rowIdx = static_cast<std::size_t>(i * numDetectorElements_ + j);
             A_[rowIdx] = ray; // move into the matrix

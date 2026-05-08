@@ -46,14 +46,16 @@ QSize Matrix::qsize() const
 
 QImage Matrix::qimage() const
 {
-    // Find the max value for normalisation so the image uses the full 0–255 range
+    // Normalise to the full 0–255 range, handling negative values
+    const double minVal = *std::min_element(data_.begin(), data_.end());
     const double maxVal = *std::max_element(data_.begin(), data_.end());
-    const double scale  = (maxVal > 0.0) ? 255.0 / maxVal : 0.0;
+    const double range  = maxVal - minVal;
+    const double scale  = (range > 0.0) ? 255.0 / range : 0.0;
 
     QImage image(qsize(), QImage::Format_RGB32);
     for (int i = 0; i < M_; ++i) {
         for (int j = 0; j < N_; ++j) {
-            const int intensity = static_cast<int>(data_[i * N_ + j] * scale);
+            const int intensity = static_cast<int>((data_[i * N_ + j] - minVal) * scale);
             const int clamped   = std::clamp(intensity, 0, 255);
             image.setPixel(j, i, qRgb(clamped, clamped, clamped));
         }

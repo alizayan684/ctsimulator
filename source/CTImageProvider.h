@@ -6,16 +6,14 @@
 #pragma once
 
 #include <QQuickImageProvider>
-#include <QObject>
 #include <QImage>
 
 class CTController;
 
 class CTImageProvider : public QQuickImageProvider
 {
-    Q_OBJECT
 public:
-    explicit CTImageProvider(CTController* controller, QObject* parent = nullptr);
+    explicit CTImageProvider(CTController* controller);
 
     [[nodiscard]] QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize) override;
 

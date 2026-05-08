@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import "qml/tutorials"
 
 ApplicationWindow {
     id: window
@@ -9,6 +10,50 @@ ApplicationWindow {
     height: 900
     title: "CT Simulator"
     color: "#0f172a"
+
+    header: ToolBar {
+        background: Rectangle {
+            color: "#020617"
+            Rectangle {
+                width: parent.width
+                height: 1
+                color: "#1e293b"
+                anchors.bottom: parent.bottom
+            }
+        }
+        RowLayout {
+            anchors.fill: parent
+            anchors.margins: 10
+            Label {
+                text: "CT Simulator Educational Platform"
+                color: "#38bdf8"
+                font.bold: true
+                font.pixelSize: 18
+            }
+        }
+    }
+
+    footer: ToolBar {
+        background: Rectangle {
+            color: "#020617"
+            Rectangle {
+                width: parent.width
+                height: 1
+                color: "#1e293b"
+                anchors.top: parent.top
+            }
+        }
+        RowLayout {
+            anchors.fill: parent
+            anchors.margins: 6
+            Label {
+                text: "Simulation Engine Ready"
+                color: "#94a3b8"
+                font.pixelSize: 12
+                Layout.leftMargin: 4
+            }
+        }
+    }
 
     ColumnLayout {
         anchors.fill: parent

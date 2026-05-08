@@ -5,7 +5,7 @@
 #include "CTImageProvider.h"
 #include "CTController.h"
 
-CTImageProvider::CTImageProvider(CTController* controller, QObject* parent)
+CTImageProvider::CTImageProvider(CTController* controller)
     : QQuickImageProvider(QQuickImageProvider::Image)
     , controller_(controller)
 {
@@ -13,13 +13,16 @@ CTImageProvider::CTImageProvider(CTController* controller, QObject* parent)
 
 QImage CTImageProvider::requestImage(const QString& id, QSize* size, const QSize& requestedSize)
 {
+    // Strip cache-busting query parameter (QML sends "phantom?1234567")
+    const QString cleanId = id.section('?', 0, 0);
+
     QImage image;
 
-    if (id == "phantom") {
+    if (cleanId == "phantom") {
         image = controller_->phantomImage();
-    } else if (id == "sinogram") {
+    } else if (cleanId == "sinogram") {
         image = controller_->sinogramImage();
-    } else if (id == "reconstruction") {
+    } else if (cleanId == "reconstruction") {
         image = controller_->reconstructionImage();
     }
 

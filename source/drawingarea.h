@@ -45,6 +45,10 @@ public:
     [[nodiscard]] const std::vector<std::vector<Complex>>& sourceProjections()   const { return sourceProjections_; }
     [[nodiscard]] const std::vector<std::vector<Complex>>& detectorProjections() const { return detectorProjections_; }
 
+    [[nodiscard]] bool hasError() const { return hasError_; }
+    [[nodiscard]] QString errorMessage() const { return errorMessage_; }
+    void clearError() { hasError_ = false; errorMessage_.clear(); }
+
 private:
     static constexpr double PI = 3.14159265358979323846;
 
@@ -72,4 +76,6 @@ private:
     std::vector<std::vector<double>> sinogram_;
     QSize sinogram_size_;
 
+    bool hasError_ = false;
+    QString errorMessage_;
 };

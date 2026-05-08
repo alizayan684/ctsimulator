@@ -22,8 +22,11 @@ set(BACKEND_SOURCES
     source/drawingarea.cpp
     source/matrix.cpp
     source/utility.cpp
-    source/artthread.cpp
-    source/sirtthread.cpp
+    src/reconstruction/ReconstructionAlgorithm.cpp
+    src/reconstruction/ART.cpp
+    src/reconstruction/SIRT.cpp
+    src/reconstruction/FBP.cpp
+    src/reconstruction/MLEM.cpp
 )
 
 set(BACKEND_HEADERS
@@ -32,8 +35,11 @@ set(BACKEND_HEADERS
     source/drawingarea.h
     source/matrix.h
     source/utility.h
-    source/artthread.h
-    source/sirtthread.h
+    src/reconstruction/ReconstructionAlgorithm.h
+    src/reconstruction/ART.h
+    src/reconstruction/SIRT.h
+    src/reconstruction/FBP.h
+    src/reconstruction/MLEM.h
 )
 
 qt_add_executable(appuntitled
