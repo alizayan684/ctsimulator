@@ -1,0 +1,1 @@
+Nothing should be ignored based on the provided file changes. The only added file is `TASK_BREAKDOWN.md`, which is a markdown document and should be tracked in version control. No compiled artifacts, dependencies, or temporary files are present in the changes.
